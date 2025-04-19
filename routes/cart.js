@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
-const db = require('../config/database');
+const db = require('../config/db');
+
+
 
 // Adicionar item ao carrinho
 router.post('/add', auth, async (req, res) => {

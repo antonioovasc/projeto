@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const db = require('../config/db');
 const fs = require('fs').promises;
 const path = require('path');
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { auth, isAdmin } = require('../middleware/auth');
-const db = require('../config/database');
+const db = require('../config/db');
 
 // Configuração do Multer para upload de imagens
 const storage = multer.diskStorage({

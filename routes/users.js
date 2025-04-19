@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { auth, isAdmin } = require('../middleware/auth');
-const db = require('../config/database');
+const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
 // Listar todos os usuários (apenas admin)

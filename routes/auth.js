@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const db = require('../config/db');
 
 // Rota de login
 router.post('/login', async (req, res) => {
@@ -78,10 +78,6 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
-    if (!name || !email || !password || !phone || !address) {
-      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-    }
-
     // Verificar se o email já existe
     const [existingUser] = await db.promise().query(
       'SELECT * FROM users WHERE email = ?',
@@ -104,7 +100,6 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Inserir o usuário no banco de dados
     await db.promise().query(
       'INSERT INTO users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)',
       [name, email, hashedPassword, phone, address, 'user']
@@ -112,9 +107,8 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'Usuário cadastrado com sucesso' });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 });
 
-module.exports = router;
+module.exports = router; 

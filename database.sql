@@ -1,6 +1,45 @@
 CREATE DATABASE IF NOT EXISTS sistema_produtos;
 USE sistema_produtos;
 
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  items JSONB,           -- Itens do pedido (pode ser um JSON com nome, quantidade, preço, etc.)
+  payment_method VARCHAR(50), -- Método de pagamento (débito, crédito, etc.)
+  card_number VARCHAR(20),   -- Número do cartão (com segurança, apenas os últimos 4 dígitos)
+  card_name VARCHAR(255),    -- Nome no cartão
+  total DECIMAL(10, 2),      -- Total do pedido
+  status VARCHAR(50),        -- Status do pedido (ex: pendente, pago, cancelado)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  payment_method VARCHAR(20),
+  card_number VARCHAR(20),
+  card_name VARCHAR(100),
+  total DECIMAL(10,2),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE order_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT,
+  product_id INT,
+  quantity INT,
+  price DECIMAL(10,2),
+  FOREIGN KEY (order_id) REFERENCES orders(id),
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+
+
+
+
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
