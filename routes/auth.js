@@ -8,7 +8,10 @@ const db = require('../config/database');
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email e senha são obrigatórios' });
+    }
+
     const [user] = await db.promise().query(
       'SELECT * FROM users WHERE email = ?',
       [email]
@@ -39,14 +42,45 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 });
+
+/// Rota para recuperação de senha
+router.post('/recover', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Verifique se o usuário existe com esse email
+    const [user] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+
+    if (!user[0]) {
+      return res.status(400).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Criptografe a nova senha
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualize a senha do usuário no banco de dados
+    await db.promise().query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]);
+
+    res.status(200).json({ message: 'Senha atualizada com sucesso' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erro ao atualizar a senha' });
+  }
+});
+
 
 // Rota de registro
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, address } = req.body;
+
+    if (!name || !email || !password || !phone || !address) {
+      return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+    }
 
     // Verificar se o email já existe
     const [existingUser] = await db.promise().query(
@@ -70,6 +104,7 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Inserir o usuário no banco de dados
     await db.promise().query(
       'INSERT INTO users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)',
       [name, email, hashedPassword, phone, address, 'user']
@@ -77,8 +112,9 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'Usuário cadastrado com sucesso' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 });
 
-module.exports = router; 
+module.exports = router;

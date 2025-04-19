@@ -36,14 +36,18 @@ router.get('/me', auth, async (req, res) => {
 
 // Atualizar dados do usuário
 router.put('/me', auth, async (req, res) => {
-  try {
-    const { name, phone, address } = req.body;
+  const { name, phone, address } = req.body;
 
+  // Validação simples para garantir que os campos obrigatórios estão presentes
+  if (!name || !phone || !address) {
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+  }
+
+  try {
     await db.promise().query(
       'UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?',
       [name, phone, address, req.user.id]
     );
-
     res.json({ message: 'Dados atualizados com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao atualizar dados do usuário' });
@@ -52,10 +56,15 @@ router.put('/me', auth, async (req, res) => {
 
 // Atualizar senha do usuário
 router.put('/me/password', auth, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body;
 
-    // Verificar senha atual
+  // Validação para garantir que as senhas sejam fornecidas
+  if (!currentPassword || !newPassword || newPassword.length < 6) {
+    return res.status(400).json({ message: 'Senha atual e nova senha são obrigatórias. A nova senha deve ter pelo menos 6 caracteres.' });
+  }
+
+  try {
+    // Verificar se a senha atual está correta
     const [user] = await db.promise().query(
       'SELECT password FROM users WHERE id = ?',
       [req.user.id]
@@ -66,7 +75,7 @@ router.put('/me/password', auth, async (req, res) => {
       return res.status(401).json({ message: 'Senha atual incorreta' });
     }
 
-    // Atualizar senha
+    // Atualizar a senha do usuário
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await db.promise().query(
       'UPDATE users SET password = ? WHERE id = ?',
@@ -84,11 +93,12 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Não permitir excluir o próprio usuário
+    // Não permitir que o usuário exclua a si mesmo
     if (id === req.user.id) {
       return res.status(400).json({ message: 'Não é possível excluir seu próprio usuário' });
     }
 
+    // Excluir o usuário
     await db.promise().query('DELETE FROM users WHERE id = ?', [id]);
     res.json({ message: 'Usuário excluído com sucesso' });
   } catch (error) {
@@ -96,4 +106,4 @@ router.delete('/:id', auth, isAdmin, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

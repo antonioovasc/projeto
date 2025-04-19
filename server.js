@@ -8,11 +8,11 @@ const bcrypt = require('bcrypt');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+  
 // Conexão com o banco de dados
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
